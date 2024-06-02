@@ -1,2 +1,2 @@
 # Runescape-Stack-Fabric
-Add runescape like stack for items. Also added coins textures that change over stack size.
+Release of Runescape-Stack-Fabric, addon for Minescape! This addon display Runescape-like stack for all items on the server. Furthermore, you can also see your cash stack texture changing as your stack grow (this require the ressourcepack).
