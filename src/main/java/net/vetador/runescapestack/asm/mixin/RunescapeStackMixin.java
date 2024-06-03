@@ -15,7 +15,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +40,6 @@ public abstract class RunescapeStackMixin {
     private static final ResourceLocation COIN_1_000_000 = new ResourceLocation(net.vetador.runescapestack.RunescapeStack.MODID, "textures/item/million_coins.png");
     private static final ResourceLocation COIN_10_000_000 = new ResourceLocation(net.vetador.runescapestack.RunescapeStack.MODID, "textures/item/ten_millions_coins.png");
     private static final ResourceLocation COIN_100_000_000 = new ResourceLocation(net.vetador.runescapestack.RunescapeStack.MODID, "textures/item/hundread_millions_coins.png");
-    private static final ResourceLocation COIN_1_000_000_000 = new ResourceLocation(net.vetador.runescapestack.RunescapeStack.MODID, "textures/item/billion_coins.png");
 
     private static final Map<ResourceLocation, Integer> textureDimensions = new HashMap<>();
 
@@ -57,8 +55,7 @@ public abstract class RunescapeStackMixin {
         textureDimensions.put(COIN_100_000, 48);
         textureDimensions.put(COIN_1_000_000, 64);
         textureDimensions.put(COIN_10_000_000, 64);
-        textureDimensions.put(COIN_100_000_000, 128);
-        textureDimensions.put(COIN_1_000_000_000, 256);
+        textureDimensions.put(COIN_100_000_000, 64);
     }
     //
     @Inject(method = "renderItem(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;III)V", at = @At("HEAD"), cancellable = true)
@@ -134,9 +131,7 @@ public abstract class RunescapeStackMixin {
     }
 
     private ResourceLocation getTextureForItemCount(long count) {
-        if (count >= 1_000_000_000l) {
-            return COIN_1_000_000_000;
-        } else if (count >= 100_000_000l) {
+        if (count >= 100_000_000l) {
             return COIN_100_000_000;
         } else if (count >= 10_000_000l) {
             return COIN_10_000_000;
