@@ -30,51 +30,36 @@ import static net.vetador.runescapestack.RunescapeStack.featuresEnabled;
 @Mixin(GuiGraphics.class)
 public abstract class RunescapeStackMixin {
 
-    private static final ResourceLocation COIN_1 = new ResourceLocation(RunescapeStack.MODID, "textures/item/one_coin.png");
-    private static final ResourceLocation COIN_2 = new ResourceLocation(RunescapeStack.MODID, "textures/item/two_coins.png");
-    private static final ResourceLocation COIN_3 = new ResourceLocation(RunescapeStack.MODID, "textures/item/three_coins.png");
-    private static final ResourceLocation COIN_4 = new ResourceLocation(RunescapeStack.MODID, "textures/item/four_coins.png");
-    private static final ResourceLocation COIN_5 = new ResourceLocation(RunescapeStack.MODID, "textures/item/five_coins.png");
-    private static final ResourceLocation COIN_25 = new ResourceLocation(RunescapeStack.MODID, "textures/item/twenty_five_coins.png");
-    private static final ResourceLocation COIN_1000 = new ResourceLocation(RunescapeStack.MODID, "textures/item/thousand_coins.png");
-    private static final ResourceLocation COIN_10_000 = new ResourceLocation(RunescapeStack.MODID, "textures/item/ten_thousands_coins.png");
-    private static final ResourceLocation COIN_100_000 = new ResourceLocation(RunescapeStack.MODID, "textures/item/hundread_thousands_coins.png");
-    private static final ResourceLocation COIN_1_000_000 = new ResourceLocation(RunescapeStack.MODID, "textures/item/million_coins.png");
-    private static final ResourceLocation COIN_10_000_000 = new ResourceLocation(RunescapeStack.MODID, "textures/item/ten_millions_coins.png");
-    private static final ResourceLocation COIN_100_000_000 = new ResourceLocation(RunescapeStack.MODID, "textures/item/hundread_millions_coins.png");
+    private static final Map<Long, ResourceLocation> COIN_TEXTURES = new HashMap<>();
 
-    private final Map<ResourceLocation, Integer> textureDimensions = new HashMap<>();
-
-    {
-        textureDimensions.put(COIN_1, 16);
-        textureDimensions.put(COIN_2, 27);
-        textureDimensions.put(COIN_3, 28);
-        textureDimensions.put(COIN_4, 32);
-        textureDimensions.put(COIN_5, 32);
-        textureDimensions.put(COIN_25, 32);
-        textureDimensions.put(COIN_1000, 36);
-        textureDimensions.put(COIN_10_000, 42);
-        textureDimensions.put(COIN_100_000, 48);
-        textureDimensions.put(COIN_1_000_000, 64);
-        textureDimensions.put(COIN_10_000_000, 64);
-        textureDimensions.put(COIN_100_000_000, 64);
+    static {
+        COIN_TEXTURES.put(1l, new ResourceLocation(RunescapeStack.MODID, "textures/item/one_coin.png"));
+        COIN_TEXTURES.put(2l, new ResourceLocation(RunescapeStack.MODID, "textures/item/two_coins.png"));
+        COIN_TEXTURES.put(3l, new ResourceLocation(RunescapeStack.MODID, "textures/item/three_coins.png"));
+        COIN_TEXTURES.put(4l, new ResourceLocation(RunescapeStack.MODID, "textures/item/four_coins.png"));
+        COIN_TEXTURES.put(5l, new ResourceLocation(RunescapeStack.MODID, "textures/item/five_coins.png"));
+        COIN_TEXTURES.put(100l, new ResourceLocation(RunescapeStack.MODID, "textures/item/hundread_coins.png"));
+        COIN_TEXTURES.put(1000l, new ResourceLocation(RunescapeStack.MODID, "textures/item/thousand_coins.png"));
+        COIN_TEXTURES.put(10000l, new ResourceLocation(RunescapeStack.MODID, "textures/item/ten_thousands_coins.png"));
+        COIN_TEXTURES.put(100000l, new ResourceLocation(RunescapeStack.MODID, "textures/item/hundread_thousands_coins.png"));
+        COIN_TEXTURES.put(1000000l, new ResourceLocation(RunescapeStack.MODID, "textures/item/million_coins.png"));
+        COIN_TEXTURES.put(10000000l, new ResourceLocation(RunescapeStack.MODID, "textures/item/ten_millions_coins.png"));
+        COIN_TEXTURES.put(100000000l, new ResourceLocation(RunescapeStack.MODID, "textures/item/hundread_millions_coins.png"));
     }
+
     //
     @Inject(method = "renderItem(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;III)V", at = @At("HEAD"), cancellable = true)
     private void renderItem(LivingEntity livingEntity, Level level, ItemStack itemStack, int i, int j, int k, CallbackInfo ci) {
         if (!itemStack.isEmpty() && featuresEnabled) {
             String itemName = itemStack.getHoverName().getString();
-            if (itemName.startsWith("Coins")) {
+            if (itemName.contains("Coins")) {
                 long itemCount = getItemCountFromTooltip(itemName);
                 ResourceLocation texture = getTextureForItemCount(itemCount);
-                Integer dimension = textureDimensions.get(texture);
                 if (resourceExists(texture)) {
                     ci.cancel();
                     GuiGraphics guiGraphics = (GuiGraphics) (Object) this;
-                    float scaleFactor = 16.0f / dimension;
                     guiGraphics.pose().pushPose();
-                    guiGraphics.pose().scale(scaleFactor, scaleFactor, 1);
-                    guiGraphics.blit(texture, (int) (i / scaleFactor), (int) (j / scaleFactor), 0, 0, dimension, dimension, dimension, dimension);
+                    guiGraphics.blit(texture, i, j, 0, 0, 16, 16, 16, 16);
                     guiGraphics.pose().popPose();
                 }
             }
@@ -122,29 +107,29 @@ public abstract class RunescapeStackMixin {
 
     private ResourceLocation getTextureForItemCount(long count) {
         if (count >= 100_000_000l) {
-            return COIN_100_000_000;
+            return COIN_TEXTURES.get(100_000_000l);
         } else if (count >= 10_000_000l) {
-            return COIN_10_000_000;
+            return COIN_TEXTURES.get(10_000_000l);
         } else if (count >= 1_000_000l) {
-            return COIN_1_000_000;
+            return COIN_TEXTURES.get(1_000_000l);
         } else if (count >= 100_000l) {
-            return COIN_100_000;
+            return COIN_TEXTURES.get(100_000l);
         } else if (count >= 10_000l) {
-            return COIN_10_000;
+            return COIN_TEXTURES.get(10_000l);
         } else if (count >= 1_000l) {
-            return COIN_1000;
-        } else if (count >= 25l) {
-            return COIN_25;
+            return COIN_TEXTURES.get(1_000l);
+        } else if (count >= 100l) {
+            return COIN_TEXTURES.get(100l);
         } else if (count >= 5l) {
-            return COIN_5;
+            return COIN_TEXTURES.get(5l);
         } else if (count == 4l) {
-            return COIN_4;
+            return COIN_TEXTURES.get(4l);
         } else if (count == 3l) {
-            return COIN_3;
+            return COIN_TEXTURES.get(3l);
         } else if (count == 2l) {
-            return COIN_2;
+            return COIN_TEXTURES.get(2l);
         } else if (count == 1l){
-            return COIN_1;
+            return COIN_TEXTURES.get(1l);
         } else return null;
     }
 
