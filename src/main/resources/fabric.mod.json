@@ -1,15 +1,14 @@
 {
 	"schemaVersion": 1,
 	"id": "runescapestack",
-	"version": "1.0.0-1.20.1",
+	"version": "1.0.1-1.20.1",
 	"name": "Runescape Stack Fabric",
-	"description": "Replace minecraft default stack with runescape (unlimited) stack. Only work on GamesLabs minescape server.",
+	"description": "This addon display Runescape-like stack for all items on the server. Furthermore, you can also see your cash stack texture changing as your stack grow.",
 	"authors": [
-		"Me!"
+		"Vetador"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "https://fabricmc.net/"
 	},
 	"license": "CC0-1.0",
 	"icon": "assets/runescapestack/runescape-stack-icon.png",
