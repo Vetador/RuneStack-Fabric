@@ -9,6 +9,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.item.ItemStack;
+import net.vetador.runescapestack.RunescapeStack;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -22,28 +23,29 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.mojang.text2speech.Narrator.LOGGER;
 import static net.vetador.runescapestack.RunescapeStack.featuresEnabled;
 
 
 @Mixin(GuiGraphics.class)
 public abstract class RunescapeStackMixin {
 
-    private static final ResourceLocation COIN_1 = new ResourceLocation(net.vetador.runescapestack.RunescapeStack.MODID, "textures/item/one_coin.png");
-    private static final ResourceLocation COIN_2 = new ResourceLocation(net.vetador.runescapestack.RunescapeStack.MODID, "textures/item/two_coins.png");
-    private static final ResourceLocation COIN_3 = new ResourceLocation(net.vetador.runescapestack.RunescapeStack.MODID, "textures/item/three_coins.png");
-    private static final ResourceLocation COIN_4 = new ResourceLocation(net.vetador.runescapestack.RunescapeStack.MODID, "textures/item/four_coins.png");
-    private static final ResourceLocation COIN_5 = new ResourceLocation(net.vetador.runescapestack.RunescapeStack.MODID, "textures/item/five_coins.png");
-    private static final ResourceLocation COIN_25 = new ResourceLocation(net.vetador.runescapestack.RunescapeStack.MODID, "textures/item/twenty_five_coins.png");
-    private static final ResourceLocation COIN_1000 = new ResourceLocation(net.vetador.runescapestack.RunescapeStack.MODID, "textures/item/thousand_coins.png");
-    private static final ResourceLocation COIN_10_000 = new ResourceLocation(net.vetador.runescapestack.RunescapeStack.MODID, "textures/item/ten_thousands_coins.png");
-    private static final ResourceLocation COIN_100_000 = new ResourceLocation(net.vetador.runescapestack.RunescapeStack.MODID, "textures/item/hundread_thousands_coins.png");
-    private static final ResourceLocation COIN_1_000_000 = new ResourceLocation(net.vetador.runescapestack.RunescapeStack.MODID, "textures/item/million_coins.png");
-    private static final ResourceLocation COIN_10_000_000 = new ResourceLocation(net.vetador.runescapestack.RunescapeStack.MODID, "textures/item/ten_millions_coins.png");
-    private static final ResourceLocation COIN_100_000_000 = new ResourceLocation(net.vetador.runescapestack.RunescapeStack.MODID, "textures/item/hundread_millions_coins.png");
+    private static final ResourceLocation COIN_1 = new ResourceLocation(RunescapeStack.MODID, "textures/item/one_coin.png");
+    private static final ResourceLocation COIN_2 = new ResourceLocation(RunescapeStack.MODID, "textures/item/two_coins.png");
+    private static final ResourceLocation COIN_3 = new ResourceLocation(RunescapeStack.MODID, "textures/item/three_coins.png");
+    private static final ResourceLocation COIN_4 = new ResourceLocation(RunescapeStack.MODID, "textures/item/four_coins.png");
+    private static final ResourceLocation COIN_5 = new ResourceLocation(RunescapeStack.MODID, "textures/item/five_coins.png");
+    private static final ResourceLocation COIN_25 = new ResourceLocation(RunescapeStack.MODID, "textures/item/twenty_five_coins.png");
+    private static final ResourceLocation COIN_1000 = new ResourceLocation(RunescapeStack.MODID, "textures/item/thousand_coins.png");
+    private static final ResourceLocation COIN_10_000 = new ResourceLocation(RunescapeStack.MODID, "textures/item/ten_thousands_coins.png");
+    private static final ResourceLocation COIN_100_000 = new ResourceLocation(RunescapeStack.MODID, "textures/item/hundread_thousands_coins.png");
+    private static final ResourceLocation COIN_1_000_000 = new ResourceLocation(RunescapeStack.MODID, "textures/item/million_coins.png");
+    private static final ResourceLocation COIN_10_000_000 = new ResourceLocation(RunescapeStack.MODID, "textures/item/ten_millions_coins.png");
+    private static final ResourceLocation COIN_100_000_000 = new ResourceLocation(RunescapeStack.MODID, "textures/item/hundread_millions_coins.png");
 
-    private static final Map<ResourceLocation, Integer> textureDimensions = new HashMap<>();
+    private final Map<ResourceLocation, Integer> textureDimensions = new HashMap<>();
 
-    static {
+    {
         textureDimensions.put(COIN_1, 16);
         textureDimensions.put(COIN_2, 27);
         textureDimensions.put(COIN_3, 28);
@@ -59,23 +61,22 @@ public abstract class RunescapeStackMixin {
     }
     //
     @Inject(method = "renderItem(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;III)V", at = @At("HEAD"), cancellable = true)
-    private void renderItem(LivingEntity livingEntity, Level level, ItemStack itemStack, int i, int j, int k, CallbackInfo ci)
-    {
-        if (!itemStack.isEmpty()) {
-            List<Component> tooltip = itemStack.getTooltipLines(Minecraft.getInstance().player, Minecraft.getInstance().options.advancedItemTooltips ? net.minecraft.world.item.TooltipFlag.Default.ADVANCED : net.minecraft.world.item.TooltipFlag.Default.NORMAL);
+    private void renderItem(LivingEntity livingEntity, Level level, ItemStack itemStack, int i, int j, int k, CallbackInfo ci) {
+        if (!itemStack.isEmpty() && featuresEnabled) {
             String itemName = itemStack.getHoverName().getString();
-            long itemCount = getItemCountFromTooltip(tooltip);
-            ResourceLocation texture = getTextureForItemCount(itemCount);
-            Integer dimension = textureDimensions.get(texture);
-
-            if (resourceExists(texture) && itemName.toLowerCase().contains("coins")) {
-                ci.cancel();
-                GuiGraphics guiGraphics = (GuiGraphics) (Object) this;
-                float scaleFactor = 16.0f / dimension;
-                guiGraphics.pose().pushPose();
-                guiGraphics.pose().scale(scaleFactor, scaleFactor, 1);
-                guiGraphics.blit(texture, (int) ( i / scaleFactor), (int) (j / scaleFactor), 0, 0, dimension, dimension, dimension, dimension);
-                guiGraphics.pose().popPose();
+            if (itemName.startsWith("Coins")) {
+                long itemCount = getItemCountFromTooltip(itemName);
+                ResourceLocation texture = getTextureForItemCount(itemCount);
+                Integer dimension = textureDimensions.get(texture);
+                if (resourceExists(texture)) {
+                    ci.cancel();
+                    GuiGraphics guiGraphics = (GuiGraphics) (Object) this;
+                    float scaleFactor = 16.0f / dimension;
+                    guiGraphics.pose().pushPose();
+                    guiGraphics.pose().scale(scaleFactor, scaleFactor, 1);
+                    guiGraphics.blit(texture, (int) (i / scaleFactor), (int) (j / scaleFactor), 0, 0, dimension, dimension, dimension, dimension);
+                    guiGraphics.pose().popPose();
+                }
             }
         }
     }
@@ -86,23 +87,16 @@ public abstract class RunescapeStackMixin {
     private void onRenderItemDecorations(Font font, ItemStack itemStack, int x, int y, @Nullable String text, CallbackInfo ci) {
 
         float scale = 0.6f;
-
         if (!itemStack.isEmpty() && featuresEnabled) {
-            // Get the item tooltip
-            List<Component> tooltip = itemStack.getTooltipLines(Minecraft.getInstance().player, Minecraft.getInstance().options.advancedItemTooltips ? net.minecraft.world.item.TooltipFlag.Default.ADVANCED : net.minecraft.world.item.TooltipFlag.Default.NORMAL);
-            // Extract the number from the tooltip
-            long itemCount = getItemCountFromTooltip(tooltip);
-
-            // Format the item count string, color, texture and dimension
+            String itemName = itemStack.getHoverName().getString();
+            long itemCount = getItemCountFromTooltip(itemName);
+            if (itemCount >= 10000 && itemCount <= 99999) scale = 0.5f;
             String formattedCount = formatCount(itemCount);
             int color = formatColor(itemCount);
             GuiGraphics guiGraphics = (GuiGraphics) (Object) this;
-
-
             int textWidth = font.width(formattedCount);
             float originalX = x + (16 - textWidth * scale) / 2;
             float originalY = y + 6 + 3;
-            // Calculate scaled positions
             int scaledX = (int) (originalX / scale);
             int scaledY = (int) (originalY / scale) - 16;
             guiGraphics.pose().pushPose();
@@ -114,19 +108,15 @@ public abstract class RunescapeStackMixin {
         }
     }
 
-    private int getItemCountFromTooltip(List<Component> tooltip) {
-        // Assume the number is in the first line and follows a pattern like "Feathers x3399"
-        if (tooltip.toString().contains("withdraw")){
+    private int getItemCountFromTooltip(String tooltip) {
+        if (tooltip.contains("withdraw")){
             return 1;
         }
         Pattern pattern = Pattern.compile(".* [xX](\\d+)");
-        for (Component line : tooltip) {
-            Matcher matcher = pattern.matcher(line.getString());
-            if (matcher.find()) {
-                return Integer.parseInt(matcher.group(1));
-            }
+        Matcher matcher = pattern.matcher(tooltip);
+        if (matcher.find()) {
+            return Integer.parseInt(matcher.group(1));
         }
-        // Fallback to 1 if no pattern is found
         return 1;
     }
 
@@ -174,9 +164,9 @@ public abstract class RunescapeStackMixin {
 
     private int formatColor(long count) {
         if (count >= 10_000_000_000_000l) {
-            return 0x00FFFF;
+            return 0x33FFFF;
         } else if (count >= 10_000_000_000l) {
-            return 0xFF00FF;
+            return 0xFF33FF;
         } else if (count >= 10_000_000l) {
             return 0x00FF33;
         } else if (count >= 100_000l) {
