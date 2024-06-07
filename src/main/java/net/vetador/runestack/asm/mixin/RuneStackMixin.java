@@ -140,19 +140,18 @@ public abstract class RuneStackMixin {
                 int l = getBarColorCharges(itemStack, key1);
                 m = x + 2;
                 n = y + 13;
-                StringBuilder diamonds = getDiamondsBuilder(key1);
-                StringBuilder diamondsMax = getDiamondsBuilderMax(key1);
+                int maxDiamondCount = Math.max(getDiamondCount(key1), getDiamondCountLeft(itemStack, key1));
                 float scale_diamonds = 0.4f;
                 int scaledM = (int) (m / scale_diamonds);
                 int scaledN = (int) (n / scale_diamonds);
-                int totalWidth = getDiamondCount(key1) * 4;
+                int totalWidth = maxDiamondCount * 4;
                 int startX = scaledM + 17 - (totalWidth / 2);
                 guiGraphics.pose().pushPose();
                 guiGraphics.pose().scale(scale_diamonds, scale_diamonds, 1);
                 guiGraphics.pose().translate(0, 0, 200.0f);
-                for (int i = 0; i < getDiamondCount(key1); i++) {
-                    guiGraphics.drawString(font, String.valueOf(diamondsMax.charAt(i)), startX + (i * 4), scaledN, -16777216);
-                    if (i < getDiamondCountLeft(itemStack, key1)) guiGraphics.drawString(font, String.valueOf(diamonds.charAt(i)), startX + (i * 4), scaledN, l | 0xFF000000);
+                for (int i = 0; i < maxDiamondCount; i++) {
+                    guiGraphics.drawString(font, "◆", startX + (i * 4), scaledN, -16777216);
+                    if (i < getDiamondCountLeft(itemStack, key1)) guiGraphics.drawString(font, "◆", startX + (i * 4), scaledN, l | 0xFF000000);
                 }
                 guiGraphics.pose().popPose();
             }
@@ -174,7 +173,7 @@ public abstract class RuneStackMixin {
             /**
              * Render slayer task stack.
              */
-            boolean isSlayerTask = cleanItemName.equals("Slayer task");
+            boolean isSlayerTask = cleanItemName.endsWith("Slayer task");
             String taskCount = formatCount(getSlayerTaskCount(itemStack));
             if (isSlayerTask)
             {
@@ -246,24 +245,6 @@ public abstract class RuneStackMixin {
         return 0;
     }
 
-    public StringBuilder getDiamondsBuilder(String key) {
-        StringBuilder diamondString = new StringBuilder();
-        int diamondCount = getDiamondCount(key);
-        for (int i = 0; i < diamondCount; i++) {
-            diamondString.append("◆");
-        }
-        return diamondString;
-    }
-
-    public StringBuilder getDiamondsBuilderMax(String key) {
-        int maxCharge = Charges_jewelry.get(key);
-        StringBuilder diamondString = new StringBuilder();
-        for (int i = 0; i < maxCharge && i < 10; i++) {
-            diamondString.append("◆");
-        }
-        return diamondString;
-    }
-
     public int getDiamondCount(String key)
     {
         int count = Charges_jewelry.get(key);
@@ -287,6 +268,7 @@ public abstract class RuneStackMixin {
         int maxCharges = Charges_jewelry.get(key);
         float f = Math.max(0.0f, (float)charges / (float)maxCharges);
         float hue = Math.max(0, f / 2.0f - 0.12f);
+        if (hue > 0.38F) hue = 0.38F;
         int barColor = Mth.hsvToRgb(hue, 1.0f, 1.0f);
         return barColor;
     }
