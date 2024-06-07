@@ -1,9 +1,9 @@
 {
 	"required": true,
-	"package": "net.vetador.runescapestack.asm.mixin",
+	"package": "net.vetador.runestack.asm.mixin",
 	"compatibilityLevel": "JAVA_17",
 	"mixins": [
-      "RunescapeStackMixin"
+		"RuneStackMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
